@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <title>Pass valid</title>
+</head>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #292b3d;
+        min-height: 100vh;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    #validForm {
+        width: 100%;
+        padding: 20px;
+        max-width: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        border: 2px solid #000;
+        background-color: #c1c3d3;
+        text-align: center;
+        box-shadow: 3px 3px 10px #000;
+    }
+
+    p {
+        font-weight: 500;
+        text-transform: uppercase;
+        text-shadow: 2px 1px 5px #292b3d;
+        font-size: 2em;
+        color: #130a24;
+    }
+    input {
+        width: 40%;
+        padding: 15px 40px;
+        margin: 10px auto;
+        outline: none;
+        background: transparent;
+        border: 1px solid #000;
+        border-radius: 3px;
+    }
+
+    input[type="submit"], .try-again-btn {
+        background-color: #000;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 100;
+        font-size: 1.3em;
+        width: 60%;
+        padding: 15px 40px;
+        margin-top: 30px;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: .2s all;
+    }
+
+    input[type="submit"]:hover {
+        box-shadow: 2px 2px 10px #fff;      
+    }
+
+    input[type="submit"]:active {
+        color: #000;
+        border-color: #000;
+        background-color: transparent;     
+    }
+
+    .fixed-info-block {
+        position: fixed;
+        width: 100vw;
+        min-height: 0vh;
+        max-height: 0px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background-color: #000;
+        opacity: 0;
+        transition: .5s all;
+    }
+
+    .fixed-info-block.active {
+        min-height: 100vh;
+        opacity: 1;
+    }
+
+    .fixed-info-block__message.error {
+        color: #b40000;
+        border-color: #b40000;
+    }
+
+    .fixed-info-block__message {
+        padding: 20px;
+        font-size: 1.5em;
+        color: #fff;
+        border: 1px solid #fff;
+        border-radius: 5px;
+        font-weight: 100;
+        text-transform: none;
+    }
+</style>
+
+<body>
+    <form id="validForm">
+        <p>Fill all fields</p>
+        <input placeholder="Enter your name" type="text" id="userName" pattern="\w+">
+        <input placeholder="Enter your email" type="email" id="userEmail" required="required">
+        <!-- OR THIS -->
+        <!-- <input placeholder="Enter your password" type="password" id="userPass" required="required"> -->
+        <!-- OR THIS -->
+        <input title="Password must contain at least 6 characters, including UPPER/lowercase and numbers" placeholder="Enter your password"
+            type="password" id="userPass" required="required" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}">
+        <input title="Password must contain at least 6 characters, including UPPER/lowercase and numbers" placeholder="Confirm your password"
+            type="password" id="userVerifyPass" required="required" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}">
+        <input type="submit" value="Send">
+    </form>
+
+    <div class="fixed-info-block">
+        <p class="fixed-info-block__message">Some message</p>
+    </div>
+
+    <script>
+        const form = document.querySelector('#validForm'),
+            userNameInput = document.querySelector('#userName'),
+            userPassInput = document.querySelector('#userPass'),
+            userVerifyPassInput = document.querySelector('#userPass'),
+            userEmailInput = document.querySelector('#userEmail');
+
+        window.formHtml = form.innerHTML;
+
+
+
+        form.addEventListener('submit', event => {
+            let userName = userNameInput.value,
+                userPass = userPassInput.value,
+                verifyPass = userVerifyPassInput.value;
+
+            event.preventDefault();
+
+            let re = /^\w+$/;
+            if (!re.test(userName)) {
+                showMessage("Error: Username must contain only letters, numbers and underscores!", true);
+                userNameInput.focus();
+                return;
+            }
+            if (userName === '') {
+                showMessage('')
+            }
+            if (!checkPassword(userPass)) {
+                showMessage('Your password must contains at least six numbers, one lowercase and one uppercase letter. Try again :)', true)
+                userPassInput.focus();
+                return;
+            }
+            if (userPass !== verifyPass) {
+                showMessage("Your passwords don't match", true);
+                userVerifyPassInput.focus();
+                return;
+            }
+            
+            showMessage('Congratulation! Your registration was succeed.');
+            deleteChildrenInParrentField(form);
+            let successMessage = document.createElement('p');
+            successMessage.classList.add('success-form');
+            successMessage.innerHTML = 'Congratulation! Your registration was succeed.';
+
+            let tryAgainBtn = document.createElement('button');
+            tryAgainBtn.classList.add('try-again-btn');
+            tryAgainBtn.innerHTML = 'Try again';
+            
+            form.appendChild(successMessage);
+            form.appendChild(tryAgainBtn);
+
+
+            tryAgainBtn.addEventListener('click', function(event) {
+                deleteChildrenInParrentField(form);
+                form.innerHTML = window.formHtml;
+                clearAllTextInputs();
+            });
+        });
+
+        function checkPassword(str) {
+            // at least one number, one lowercase and one uppercase letter
+            // at least six characters
+            var re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+            return re.test(str);
+        }
+
+        function deleteChildrenInParrentField(field) {
+                Array.from(field.children).forEach(elem => {
+                    elem.remove();
+                });
+        }
+        
+        function clearAllTextInputs () {
+            Array.from(document.querySelectorAll('input[type="text"]')).forEach(elem => {
+                    elem.value = '';
+                });
+        }
+        function showMessage(message, isError) {
+            let messageContainer = document.querySelector('.fixed-info-block'),
+                messageField = document.querySelector('.fixed-info-block__message');
+            isError = isError || false;
+
+
+            isError
+                ? messageField.classList.add('error')
+                : messageField.classList.remove('error');
+
+            messageField.innerHTML = message;
+            messageContainer.classList.add('active');
+
+            let delay = isError ? 5000 : 3000;
+
+            setTimeout(() => {
+                messageContainer.classList.remove('active');
+            }, delay);
+        }
+    </script>
+</body>
+
+</html>
